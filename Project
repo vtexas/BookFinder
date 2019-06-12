@@ -119,3 +119,129 @@ def parseMyShop(arr):
 	for i in arr:
 		arr2.append(myShop(i))
 	return arr2
+	
+def parseAll(arr):
+
+	s = []
+	
+	s.append({'res' : parseGlobus(arr),'s' : 'Biblio-Globus'})
+	s.append({'res' : parseMyShop(arr),'s' : 'My-Shop'})
+	s.append({'res' : parseDeltabook(arr),'s' : 'Deltabook'})
+	s.append({'res' : parseShopRelod(arr),'s' : 'Shop-Relod'})
+
+	counts = []
+	counts.append(getCount(s[0]))
+	counts.append(getCount(s[1]))
+	counts.append(getCount(s[2]))
+	counts.append(getCount(s[3]))
+
+	prices = []
+
+	prices.append(getPrice(s[0])+90)
+	prices.append(getPrice(s[1])+79)
+	prices.append(getPrice(s[2])+300)
+	prices.append(getPrice(s[3])+290)
+
+	l = insertion_sort(counts,prices,s)
+	l[0] = list(reversed(l[0]))
+	l[1] = list(reversed(l[1]))
+	return l
+	
+def insertion_sort(c,p,s):  
+	
+	for i in range(1, len(c)):
+		c_to_insert = c[i]
+		p_to_insert = p[i]
+		s_to_insert = s[i]
+
+		j = i - 1
+	  
+		while j >= 0 and (c[j] > c_to_insert or (c[j] == c_to_insert and p[j] < p_to_insert)):		  
+			c[j + 1] = c[j]
+			p[j + 1] = p[j]
+			s[j + 1] = s[j]
+			j -= 1
+		
+		c[j + 1] = c_to_insert
+		p[j + 1] = p_to_insert
+		s[j + 1] = s_to_insert
+
+	l = []
+	l.append(s)
+	l.append(p)
+	return l
+
+def getCount(arr):
+	count = 0
+	res = arr["res"]
+	for i in res:
+		if (i != None):
+			count+=1
+	return count
+
+def getPrice(arr):
+	price = 0
+	res = arr["res"]
+	for i in res:
+		if (i != None):
+			price+=i["price"]
+	return price
+
+
+
+  
+pool = ProcessPoolExecutor()
+
+def startParsing(arr,t):
+
+	c = 0
+	
+	r = parseAll(arr)
+	prices = r[1]
+	r = r[0]
+	t.insert(INSERT, 'Результаты:\n')
+	counts = []
+	counts.append(getCount(r[0]))
+	counts.append(getCount(r[1]))
+	counts.append(getCount(r[2]))
+	counts.append(getCount(r[3]))
+	for i in range(0,len(counts)):
+		if counts[i] > 0:
+			c+=1
+			t.insert(INSERT, r[i]['s']+'\n')
+			res = r[i]['res']
+			for j in res:
+				s = j['name']
+				s = s+' : '
+				s = s+str(j['price'])
+				s = s+' руб\n'
+				t.insert(INSERT, s)
+			t.insert(INSERT, 'Итоговая цена с доставкой: '+str(prices[i])+' руб'+'\n\n')
+	if (c==0):
+		t.insert(INSERT, 'Ничего не найдено:\n')
+
+def Search(ev) :
+	textbox1.delete('1.0', 'end')
+	text = textbox.get('1.0', 'end')
+	if (text == '\n'):
+		textbox1.insert(INSERT, 'Вы не ввели ни одной книги.\n')
+	else:
+		text = text.split('\n')
+		arr = []
+		for i in text:
+			book = None
+			book = i.strip().split('\"')
+			pos = i.strip().find('\"')
+			if (pos > -1):
+				if (i == 0):
+					arrEl = {'name' : book[0],'author' : book[1]}
+					arr.append(arrEl)
+				else:
+					arrEl = {'name' : book[1],'author' : book[0]}
+					arr.append(arrEl)
+		if (len(arr) == 0):
+			textbox1.insert(INSERT, 'Пожалуйста,введите книги корректно.\n')
+		else:
+			startParsing(arr,textbox1)
+			
+
