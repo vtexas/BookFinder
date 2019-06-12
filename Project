@@ -245,3 +245,45 @@ def Search(ev) :
 			startParsing(arr,textbox1)
 			
 
+def Quit(ev):
+global root
+root.destroy()
+
+root = Tk()
+root.geometry("600x400")
+panelFrame = Frame(root, height = 60, bg = 'gray')
+textFrame = Frame(root, height = 340, width = 600)
+
+panelFrame.pack(side = 'top', fill = 'x')
+textFrame.pack(side = 'bottom', fill = 'both', expand = 1)
+
+textbox = Text(textFrame, font='Arial 12', wrap='word')
+scrollbar = Scrollbar(textFrame)
+
+scrollbar['command'] = textbox.yview
+textbox['yscrollcommand'] = scrollbar.set
+
+textbox.place(x=10,y=10,width = 250, height = 300)
+scrollbar.place(x=260,y=10,width=10,height = 300)
+
+textbox1 = Text(textFrame, font='Arial 12', wrap='word')
+scrollbar1 = Scrollbar(textFrame)
+
+scrollbar1['command'] = textbox1.yview
+textbox1['yscrollcommand'] = scrollbar1.set
+
+textbox1.place(x=300,y=10,width = 250, height = 300)
+scrollbar1.place(x=550,y=10,width=10,height = 300)
+
+loadBtn = Button(panelFrame, text = 'Искать')
+quitBtn = Button(panelFrame, text = 'Выход')
+
+loadBtn.bind("<Button-1>", Search)
+quitBtn.bind("<Button-1>", Quit)
+
+lbl = Label(panelFrame,text="Вводите книги по одной в каждой строке в двойных кавычках\nТакже можно вводить автора на одной строке с книго без кавычек")
+lbl.place(x=150,y=10,width=500, height=40)
+loadBtn.place(x = 10, y = 10, width = 60, height = 40)
+quitBtn.place(x = 80, y = 10, width = 60, height = 40)
+
+root.mainloop()
