@@ -287,3 +287,6 @@ loadBtn.place(x = 10, y = 10, width = 60, height = 40)
 quitBtn.place(x = 80, y = 10, width = 60, height = 40)
 
 root.mainloop()
+
+
+
