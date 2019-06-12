@@ -1,1 +1,121 @@
+import sys
+import ssl
 
+context = ssl._create_unverified_context()
+
+from tkinter import *
+from concurrent.futures import ProcessPoolExecutor
+
+from urllib.request import Request, urlopen
+from urllib.parse import quote
+from bs4 import BeautifulSoup
+
+
+
+def deltabook(q):
+	result = None
+
+	name = q["name"]
+	author = q["author"]
+
+	qName = quote(name).split('%20')
+	qName = '+'.join(qName)
+	
+	resp = urlopen("https://deltabook.ru/search/?q="+qName,context=context)
+	respData = resp.read().decode(resp.headers.get_content_charset())
+
+	bsObj = BeautifulSoup(respData)
+	results = bsObj.find('div',{'class' : 'searchresult-block book'}).findAll('a',{'class' : 'title'})
+	prices = bsObj.find('div',{'class' : 'searchresult-block book'}).findAll('p',{'class' : 'price'})
+	for i in range(len(results)):
+		if (name in results[i].text):
+			result = {'name' : name,'price' : int(prices[i].text.split('.')[0])}
+			break
+	return result
+
+def parseDeltabook(arr):
+	arr2 = []
+	for i in arr:
+		arr2.append(deltabook(i))
+	return arr2
+
+	
+def biblio_globus(q):
+	result = None
+
+	name = q["name"]
+	author = q["author"]
+	
+	resp = urlopen("http://www.biblio-globus.ru/search/catalog/products?query="+quote(name))
+	respData = resp.read().decode(resp.headers.get_content_charset())
+
+	bsObj = BeautifulSoup(respData)
+	results = bsObj.findAll('a',{'class' : 'name'})
+	prices = bsObj.findAll('div',{'class' : 'title_data price'})
+	for i in range(len(results)):
+		if (name in results[i].text):
+			result = {'name' : name,'price' : int(prices[i].find('span').text.split(',')[0])}
+			break
+	return result
+
+
+def parseGlobus(arr):
+	arr2 = []
+	for i in arr:
+		arr2.append(biblio_globus(i))
+	return arr2
+	
+def shopRelod(q):
+	result = None
+
+	name = q["name"]
+	author = q["author"]
+
+	qName = quote(name).split('%20')
+	qName = '%2B'.join(qName)
+	
+	resp = urlopen("https://shop.relod.ru/product/?sort=STOCK&order=desc&q="+qName,context=context)
+	respData = resp.read().decode(resp.headers.get_content_charset())
+
+	bsObj = BeautifulSoup(respData)
+	results = bsObj.findAll('a',{'class' : 'bxr-font-color bxr-font-color-hover'})
+	prices = bsObj.findAll('span',{'class' : 'bxr-market-current-price bxr-market-format-price'})
+	for i in range(len(results)):
+		if (name in results[i].text):
+			result = {'name' : name,'price' : int(''.join(prices[i].text.split('руб')[0].split(' ')))}
+			break
+	return result
+
+
+def parseShopRelod(arr):
+	arr2 = []
+	for i in arr:
+		arr2.append(shopRelod(i))
+	return arr2	
+
+def myShop(q):
+	result = None
+
+	name = q["name"]
+	author = q["author"]
+
+	req = Request('https://my-shop.ru/shop/search/a/sort/z/page/1.html?f14_39=0&f14_16=6&f14_6='+quote(name)+'&t=0&next=1&kp=11&flags=9&menu_catid=0')
+	resp = urlopen(req)
+	respData = resp.read().decode(resp.headers.get_content_charset())
+
+	bsObj = BeautifulSoup(respData)
+	
+	results = bsObj.findAll('a',{'title' : name})
+	prices = bsObj.findAll('b',{'style' : 'font-size:14px'})
+	for i in range(len(results)):
+		if not('audio' in results[i].attrs["href"]):
+			result = {'name' : name,'price' : int(prices[i].text.split("руб")[0][0:-1])}
+			break
+	return result
+
+
+def parseMyShop(arr):
+	arr2 = []
+	for i in arr:
+		arr2.append(myShop(i))
+	return arr2
